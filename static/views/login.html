@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="/lib/bootstrap/css/bootstrap.min.css">
+    <!-- <script src="/js/jquery.min.js"></script> -->
+    <script src="https://cdn.bootcss.com/jquery/3.3.1/jquery.js"></script>
+    <script type="text/javascript" src="/js/md5.js"></script>
+    <title>登录页面</title>
+</head>
+<body>
+<div class="container" style="margin-top:180px; ">
+
+        <div class="col-md-6 col-md-offset-3">
+            <div class="panel panel-primary">
+                <div class="panel-heading">登录学生管理系统</div>
+                <div class="panel-body">
+                   <div class="form-horizontal">
+                        <div class="form-group">
+                            <label for="uname" class="col-sm-2 control-label">用户名</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" name="username" id="usernameId" placeholder="请输入用户名">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="pwd" class="col-sm-2 control-label">密码</label>
+                            <div class="col-sm-10">
+                                <input type="password" class="form-control" name="password" id="passwordId" placeholder="请输入密码">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="pwd" class="col-sm-2 control-label">验证码</label>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="vcode" id="vcodeId" placeholder="请输入验证码">
+                            </div>
+                            <div class="col-sm-3">
+                                <img id="vcodeimg" src="/account/vcode">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-sm-offset-2 col-sm-10">
+                                <button onclick="login()"  class="btn btn-default">登录</button>
+                                &nbsp;&nbsp;
+                                <input  onclick="register();" type="button"  value="注册" class="btn btn-danger">
+                            </div>
+                        </div>
+                   </div>
+                </div>
+            </div>
+            </div>
+    </div>
+</body>
+<script>
+    //自己写的回调函数
+    //回调函数本身也是一个普通的函数，只是被当做另外一个函数的参数,传递到另外一个函数中
+    //当另外一个函数执行完毕之后，它会调用我们传递进去的回调函数，这样的话，我们的回调函数中
+    //的代码就会被执行
+    /**
+    function successFunc(data){
+        console.log("我是successFunc",data)
+    }
+
+    networkRequest("http://www.baidu.com",successFunc)
+
+    //相当于$.ajax
+    function networkRequest(url,callback){
+        //假设我在发送请求
+        setTimeout(function(){
+            callback({status:0,message:"登录成功"})
+        }, 3000);
+    }
+    **/
+
+    $("#vcodeimg").click(function(){
+        $(this).attr('src','/account/vcode?id='+Math.random())
+    })
+
+    //注册
+    function register(){
+        window.location.href = "/account/register"
+    }
+
+    //登录操作
+    function login(){
+        var url = "/account/login"
+
+        var password = $.md5($("#passwordId").val()+"HM17NIUBI")
+
+        //发送注册请求
+        $.post(url,{
+            username:$("#usernameId").val(),
+            password:password,
+            vcode:$("#vcodeId").val()
+        },function(data,status){
+            if(data.status!=0){//失败
+                alert(data.message)
+                $("#vcodeimg").attr('src','/account/vcode?id='+Math.random())
+            }else{
+                window.location.href = "/studentmanager/list"
+            }
+        })
+    }
+</script>
+</html>

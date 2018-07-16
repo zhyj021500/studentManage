@@ -69,24 +69,59 @@ app.get('/register',(req,res)=>{
 app.post('/register',(req,res)=>{
     let username = req.body.username;
     let password = req.body.password;
-  //  console.log(username+"---"+password);
+    console.log(username+"---"+password);
   //查数据库
   MongoClient.connect(url, function(err, client) {
-   
-   
-    const db = client.db('userinfo');
-    const collection = db.collection('documents');
+    const db = client.db(dbName);
+    const collection = db.collection('userinfo');
     // Insert some documents
-    collection.insertMany([
-      {username}
-    ], function(err, result) {
-      console.log(result);
-    });
+    collection.find({username}).toArray(function(err, docs) {
+       // console.log(docs);
+       if(docs.length == 0){
+           //该用户名没有注册
+           collection.insertOne({
+            username,
+            password
+        },(err,result)=>{
+           // console.log(err);
+            // 注册成功了
+            res.setHeader('content-type','text/html');
+            res.send("<script>alert('欢迎入坑');window.location='/login'</script>")
+            // 关闭数据库连接即可
+            client.close();
+        })
+       }else{
+            res.setHeader('content-type',"text/html");
+            res.send(`<script>alert('已被注册'); window.location.href='/register'</script>`)
+       }
+        
+      });
    
-    client.close();
+   
   });
     
 });
+
+ //跳到首页
+app.get('/index',(req,res)=>{
+    if(req.session.userinfo){
+        //有就登录了
+        res.sendFile(path.join(__dirname,"static/views/index.html"));
+    }else{
+          // 没有session 去登录页
+          res.setHeader('content-type', 'text/html');
+          res.send("<script>alert('请登录');window.location.href='/login'</script>");
+    }
+});
+
+// 退出
+app.get('/logout',(req,res)=>{
+    //删除session保存的userinfo
+    delete req.session.userinfo;
+    //跳到登录页
+    res.redirect('/login');
+});
+
 //监听
 app.listen(80,"127.0.0.1",()=>{
     console.log('监听');

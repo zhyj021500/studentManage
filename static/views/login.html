@@ -64,56 +64,5 @@
     </div>
 
 </body>
-<script>
-    //自己写的回调函数
-    //回调函数本身也是一个普通的函数，只是被当做另外一个函数的参数,传递到另外一个函数中
-    //当另外一个函数执行完毕之后，它会调用我们传递进去的回调函数，这样的话，我们的回调函数中
-    //的代码就会被执行
-    /**
-    function successFunc(data){
-        console.log("我是successFunc",data)
-    }
-
-    networkRequest("http://www.baidu.com",successFunc)
-
-    //相当于$.ajax
-    function networkRequest(url,callback){
-        //假设我在发送请求
-        setTimeout(function(){
-            callback({status:0,message:"登录成功"})
-        }, 3000);
-    }
-    **/
-
-    $("#vcodeimg").click(function () {
-        $(this).attr('src', '/account/vcode?id=' + Math.random())
-    })
-
-    //注册
-    function register() {
-        window.location.href = "/account/register"
-    }
-
-    //登录操作
-    function login() {
-        var url = "/account/login"
-
-        var password = $.md5($("#passwordId").val() + "HM17NIUBI")
-
-        //发送注册请求
-        $.post(url, {
-            username: $("#usernameId").val(),
-            password: password,
-            vcode: $("#vcodeId").val()
-        }, function (data, status) {
-            if (data.status != 0) { //失败
-                alert(data.message)
-                $("#vcodeimg").attr('src', '/account/vcode?id=' + Math.random())
-            } else {
-                window.location.href = "/studentmanager/list"
-            }
-        })
-    }
-</script>
 
 </html>

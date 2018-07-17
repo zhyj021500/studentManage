@@ -9,13 +9,8 @@ let session = require('express-session')
 let bodyParser = require('body-parser')
 //引入自己封装的数据库的操作
 let myT = require(path.join(__dirname,'tools/myT.js'));
-//引入mongodb
-// const MongoClient = require('mongodb').MongoClient;
-// const assert = require('assert');
-//路径
-// const url = 'mongodb://localhost:27017';
-//  Database Name 库名
-// const dbName = 'footlist';
+//引入自己定义的路由中间件
+let indexRoute = require(path.join(__dirname,"route/indexRoute.js"));
 
 let app = express();
 //静态资源托管
@@ -26,6 +21,8 @@ app.use(session({
   }));
 //中间件 格式化请求数据
 app.use(bodyParser.urlencoded({ extended: false }))
+// 使用 index路由中间件 挂载到 /index这个路径下面
+app.use('/index',indexRoute);
 
 //请求登录页
 app.get('/login',(req,res)=>{
@@ -95,17 +92,6 @@ app.post('/register',(req,res)=>{
     
 });
 
- //跳到首页
-app.get('/index',(req,res)=>{
-    if(req.session.userinfo){
-        //有就登录了
-        res.sendFile(path.join(__dirname,"static/views/index.html"));
-    }else{
-          // 没有session 去登录页
-          res.setHeader('content-type', 'text/html');
-          res.send("<script>alert('请登录');window.location.href='/login'</script>");
-    }
-});
 
 // 退出
 app.get('/logout',(req,res)=>{

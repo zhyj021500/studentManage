@@ -68,10 +68,19 @@
 </html>
 <script src="../lib/bootstrap/js/bootstrap.min.js"></script>
 <!-- <script src="../lib/jquety/jquery-1.12.4.min.js"></script> -->
+<script src="../lib/jquery.md5.js"></script>
 <script>
     $(function(){
         $('.icon').click(function(){
             $(this).attr("src",$(this).attr('src')+"?"+Math.random());
+        });
+        $('button.btn-default').click(function(event){
+           // event.preventDefault();
+            let password  = $('input[name=password]').val();
+           // console.log(password);
+            let md5 = $.md5(password,'hewsnd');
+           // console.log(md5);
+           $('input[name=password]').val(md5);
         });
     });
    

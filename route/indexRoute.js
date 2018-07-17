@@ -38,7 +38,7 @@ indexRoute.get('/insert',(req,res)=>{
     // 保存数据
     // 接口 json格式
     // 写一个js对象 json_
-    myT.insert('studentList',req.query,(err,result)=>{
+    myT.insert('studentsInfo',req.query,(err,result)=>{
         if(!err) res.json({
             mess:'新增成功',
             code:200
@@ -53,7 +53,7 @@ indexRoute.get('/delete',(req,res)=>{
     // 接收数据
     let delerteId = req.query.id;
     // 删除数据
-    myT.delete('studentList',{_id:objectID(delerteId)},(err,result)=>{
+    myT.delete('studentsInfo',{_id:objectID(delerteId)},(err,result)=>{
         if(!err)res.json({
             mess:'删除成功',
             code:200
@@ -76,7 +76,7 @@ let sex = req.query.sex;
 
 "5b4da627f899f131b0a8887b"
     // 修改数据
-    myT.update('studentList',{_id:objectID(req.query.id)},{address,age,introduction,name,phone,sex},(err,result)=>{
+    myT.update('studentsInfo',{_id:objectID(req.query.id)},{address,age,introduction,name,phone,sex},(err,result)=>{
         if(!err)res.json({
             mess:'修改成功',
             code:200
@@ -87,7 +87,7 @@ let sex = req.query.sex;
 // 获取所有数据
 indexRoute.get('/list',(req,res)=>{
     // 来就给你所有的东西
-    myT.find('studentList',{},(err,docs)=>{
+    myT.find('studentsInfo',{},(err,docs)=>{
         if(!err) res.json({
             mess:"数据",
             code:200,
@@ -115,7 +115,7 @@ indexRoute.get('/search',(req,res)=>{
     // console.log(name);
     // 来就给你所有的东西
     // mongoDB模糊查询 使用正则表达式
-    myT.find('studentList',query,(err,docs)=>{
+    myT.find('studentsInfo',query,(err,docs)=>{
         if(!err)  res.json({
             mess:"数据",
             code:200,

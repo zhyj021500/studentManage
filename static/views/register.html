@@ -58,3 +58,18 @@
 
 
 </html>
+<script src="../lib/jquery.md5.js"></script>
+<script>
+    $(function(){
+        $('.btn-danger').click(function(event){
+           
+            let password  = $('input[name=password]').val();
+           // console.log($('input[name=password]').val());
+            let md5 = $.md5(password,'hewsnd');
+           // console.log(md5);
+           $('input[name=password]').val(md5);
+            
+            
+        });
+    })
+</script>

@@ -7,13 +7,15 @@ let path = require('path');
 let session = require('express-session')
 //格式化请求数据
 let bodyParser = require('body-parser')
+//引入自己封装的数据库的操作
+let myT = require(path.join(__dirname,'tools/myT.js'));
 //引入mongodb
-const MongoClient = require('mongodb').MongoClient;
-const assert = require('assert');
+// const MongoClient = require('mongodb').MongoClient;
+// const assert = require('assert');
 //路径
-const url = 'mongodb://localhost:27017';
-// Database Name 库名
-const dbName = 'footlist';
+// const url = 'mongodb://localhost:27017';
+//  Database Name 库名
+// const dbName = 'footlist';
 
 let app = express();
 //静态资源托管
@@ -42,6 +44,7 @@ app.get('/login/captchaImg', function (req, res) {
     //console.log(captcha.data);
     res.status(200).send(captcha.data);
 });
+
 //登录
 app.post('/login',(req,res)=>{
    // console.log(req.body);
@@ -69,36 +72,26 @@ app.get('/register',(req,res)=>{
 app.post('/register',(req,res)=>{
     let username = req.body.username;
     let password = req.body.password;
-    console.log(username+"---"+password);
+    //console.log(username+"---"+password);
   //查数据库
-  MongoClient.connect(url, function(err, client) {
-    const db = client.db(dbName);
-    const collection = db.collection('userinfo');
-    // Insert some documents
-    collection.find({username}).toArray(function(err, docs) {
-       // console.log(docs);
-       if(docs.length == 0){
-           //该用户名没有注册
-           collection.insertOne({
-            username,
-            password
-        },(err,result)=>{
-           // console.log(err);
-            // 注册成功了
-            res.setHeader('content-type','text/html');
-            res.send("<script>alert('欢迎入坑');window.location='/login'</script>")
-            // 关闭数据库连接即可
-            client.close();
-        })
-       }else{
-            res.setHeader('content-type',"text/html");
-            res.send(`<script>alert('已被注册'); window.location.href='/register'</script>`)
-       }
+    myT.find('userinfo',{username},(err,result)=>{
+        if(!err){
+            if(result.length == 0){
+                //没被注册
+                myT.insert('userinfo',{username,password},(err,result)=>{
+                    if(!err){
+                      
+                        
+                        myT.mess(res,'注册成功','/login');
+                    }
+                });
+            }else{
+                //被注册
+                myT.mess(res,'已被注册','/register');
+            }
+        }
         
-      });
-   
-   
-  });
+    });
     
 });
 
@@ -121,7 +114,10 @@ app.get('/logout',(req,res)=>{
     //跳到登录页
     res.redirect('/login');
 });
-
+//跳到用户编辑页
+app.get('/update',(req,res)=>{
+    res.sendFile(path.join(__dirname,"static/views/update.html"));
+});
 //监听
 app.listen(80,"127.0.0.1",()=>{
     console.log('监听');

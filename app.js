@@ -11,7 +11,6 @@ let bodyParser = require('body-parser')
 let myT = require(path.join(__dirname,'tools/myT.js'));
 //引入自己定义的路由中间件
 let indexRoute = require(path.join(__dirname,"route/indexRoute.js"));
-
 let app = express();
 //静态资源托管
 app.use(express.static('static'));
@@ -23,6 +22,11 @@ app.use(session({
 app.use(bodyParser.urlencoded({ extended: false }))
 // 使用 index路由中间件 挂载到 /index这个路径下面
 app.use('/index',indexRoute);
+
+// 导入 art-template
+app.engine('html', require('express-art-template'));
+app.set('views', '/static/views');
+
 
 //请求登录页
 app.get('/login',(req,res)=>{
@@ -52,11 +56,25 @@ app.post('/login',(req,res)=>{
    
     if(code == req.session.captcha){
         //保存登录信息 es6快速赋值
-        req.session.userinfo = {username,password};
-        res.sendFile(path.join(__dirname,'/static/views/index.html'));
+        myT.find('userinfo',{username,password},(err,docs)=>{
+            if(!err){
+                // 没错说明数据库没有问题
+                // 继续判断用户是否存在
+                if(docs.length==1){
+                    // 保存session
+                    req.session.userInfo = {
+                        username
+                    }
+                    // 去首页
+                    myT.mess(res,'欢迎回来','/index');
+                }else{
+                    // 用户名或密码错误 没有注册
+                    myT.mess(res,'你是谁,你要干什么','/login');
+                }
+            }
+        })
     }else{
-        res.setHeader('content-type',"text/html");
-        res.send(`<script>alert('验证码错误'); window.location.href='/login'</script>`);
+        myT.mess(res,'哥们,验证码不对哦,检查一下吧','/login');
     }
 });
 
@@ -100,10 +118,7 @@ app.get('/logout',(req,res)=>{
     //跳到登录页
     res.redirect('/login');
 });
-//跳到用户编辑页
-app.get('/update',(req,res)=>{
-    res.sendFile(path.join(__dirname,"static/views/update.html"));
-});
+
 //监听
 app.listen(80,"127.0.0.1",()=>{
     console.log('监听');

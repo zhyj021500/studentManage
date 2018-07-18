@@ -50,7 +50,7 @@
 
                     <!-- Collect the nav links, forms, and other content for toggling -->
                     <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-                        <p class="navbar-text navbar-right">欢迎[么么哒]登录
+                        <p class="navbar-text navbar-right">欢迎[{{username}}]登录
                             <a href="/logout" class="navbar-link logout">退出</a>
                         </p>
                     </div>
@@ -91,19 +91,21 @@
 
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-success">查询</button>
+                        <button type="button" class="btn btn-success btn-search" >查询</button>
                         <button type="submit" class="btn btn-success insert">新增</button>
                     </form>
                 </div>
 
                 <table class="table table-bordered">
-                    <tr>
-                        <th>姓名</th>
-                        <th>年龄</th>
-                        <th>性别</th>
-                        <th>手机号</th>
-                        <th>操作</th>
-                    </tr>
+                    <thead>
+                        <tr>
+                            <th>姓名</th>
+                            <th>年龄</th>
+                            <th>性别</th>
+                            <th>手机号码</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
                     <tbody>
                         <tr class="text-center ">
                             <td>小王</td>
@@ -197,7 +199,7 @@
 </html>
 <script>
     $(function () {
-        //点击新增
+        //点击新增跳到新增界面
         $('.insert').click(function (event) {
             event.preventDefault();
             $('.list-box').addClass('hidden');
@@ -211,9 +213,176 @@
         });
 
         //点击编辑
-        $('a.bg-primary').click(function () {
-            $('.list-box').addClass('hidden');
-            $('.update-box').removeClass('hidden').find('.updata').text('更新');
+        $('.list-box table').on('click', 'a.btn-success', function () {
+            // console.log('dkkdksdmksmdkl');
+
+            let id = $(this).parent().parent().attr('data-id');
+            //console.log(id);
+            
+            // 调用根据id获取数据的接口
+            $.ajax({
+                url: '/index/search',
+                data: {
+                    id
+                },
+                // type:,
+                success: function (backData) {
+                  //  console.log(backData);
+                    // 回调函数中 显示编辑页面 修改内部的值
+                    $('.list-box').addClass('hidden');
+                    $('.update-box').removeClass('hidden').find('.updata').text('修改');
+                    // 返回的数据对象{name,phone,sex,age...}
+                    let data = backData.list[0];
+                    // 跟form表单中的 表单元素的 name相等
+                    for (const key in data) {
+                        // 找到form中 name属性 跟key相等的表单元素 赋值为 对象 对应的属性的值
+                        $(`.update-box form [name=${key}]`).val(data[key]);
+                    }
+                    // 把id 保存起来
+                    $('.update-box form button[type=submit]').attr('data-id', data._id);
+
+
+                }
+            });
         });
+
+        //渲染页面
+        function renderData() {
+            $.ajax({
+                url: 'index/list',
+                success: (backData) => {
+                    console.log(backData.list.length);
+                    let totalStr = '';
+                    for (let i = 0; i < backData.list.length; i++) {
+                        totalStr +=
+                            `
+                    <tr  data-id='${backData.list[i]._id}'>
+                        <td>${backData.list[i].name}</td>
+                        <td>${backData.list[i].age}</td>
+                        <td>${backData.list[i].sex}</td>
+                        <td>${backData.list[i].phone}</td>
+                        <td>
+                            <a href="#" class="btn btn-success btn-sm">编辑</a>
+                            |
+                            <a href="#" class="btn btn-danger btn-sm">删除</a>
+                        </td>
+                    </tr>`;
+                    }
+                    // console.log(totalStr);
+                    $('.list-box tbody').html(totalStr);
+                }
+            })
+
+        }
+        //渲染页面
+        renderData();
+
+        //点击新增页 中的新增 学生信息
+        $("button.updata").click(function (event) {
+
+            event.preventDefault();
+            if ($(this).text() == '新增') {
+                //  console.log($('.update-box form').serialize());
+                $.ajax({
+                    url: 'index/insert',
+                    data: $('.update-box form').serialize(),
+                    success: (backData) => {
+                        // console.log(backData);
+                        renderData();
+                        $('.btn-warning').click();
+                    }
+                });
+            } else if ($(this).text() == '修改') {
+                // 格式化数据
+                let sendData = $(".update-box form").serialize();
+                // 拼接id上去
+                // console.log(sendData);
+                sendData += `&id=${$(this).attr('data-id')}`;
+                // console.log(sendData);
+
+                // 修改逻辑
+                $.ajax({
+                    url: '/index/update',
+                    data: sendData,
+                    type: "get",
+                    success: (backData) => {
+                        console.log(backData);
+                        // 重新获取数据
+                        renderData();
+                        // 关闭新增界面
+                        // 显示列表区域
+                        $('.btn-warning').click();
+                    }
+                })
+            }
+        });
+
+        
+        // 删除逻辑
+        $('.list-box tbody').on('click', 'a.btn-danger', function () {
+            // 提示用户
+            if (window.confirm('你真的要这样?o(╥﹏╥)o')) {
+                // 获取id
+                let id = $(this).parent().parent().attr('data-id');
+                // 调用接口
+                $.ajax({
+                    url: '/index/delete',
+                    data: {
+                        id
+                    },
+                    // type:,
+                    success: function (backData) {
+                        console.log(backData);
+                        renderData();
+                    }
+                })
+                // 回调函数中重新加载页面数据(局部刷新)
+            } else {
+                // 取消了
+                alert('好样的');
+            }
+
+
+        })
+
+        // 查询逻辑
+        $('.btn-search').click(function () {
+            // 获取输入的值
+            let userName = $("#exampleInputAmount").val();
+            // 调用接口
+            $.ajax({
+                url: '/index/search',
+                data: {
+                    userName
+                },
+                // type:,
+                success: function (backData) {
+                    
+                    let totalStr = '';
+                    for (let i = 0; i < backData.list.length; i++) {
+                        totalStr +=
+                            `
+                    <tr  data-id='${backData.list[i]._id}'>
+                        <td>${backData.list[i].name}</td>
+                        <td>${backData.list[i].age}</td>
+                        <td>${backData.list[i].sex}</td>
+                        <td>${backData.list[i].phone}</td>
+                        <td>
+                            <a href="#" class="btn btn-success btn-sm">编辑</a>
+                            |
+                            <a href="#" class="btn btn-danger btn-sm">删除</a>
+                        </td>
+                    </tr>`;
+                    }
+                    // console.log(totalStr);
+                    $('.list-box tbody').html(totalStr);
+                }
+                
+            })
+            // 渲染页面
+
+        })
+        
+
     });
 </script>

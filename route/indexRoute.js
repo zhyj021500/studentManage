@@ -16,12 +16,14 @@ indexRoute.get('/', (req, res) => {
     // 有session 欢迎
     if (req.session.userInfo) {
         // 获取用户名
-        let userName = req.session.userInfo.userName;
+        let username = req.session.userInfo.username;
+        console.log(username);
+        
         // 登陆了
         // res.sendFile(path.join(__dirname, '../static/views/index.html'));
         // 使用模板引擎 渲染页面 并且返回
-        res.render(path.join(__dirname,'../static/views/index.art'), {
-            userName
+        res.render(path.join(__dirname,'../static/views/index.html'), {
+            username
         });
     } else {
         // 没有session 去登录页
@@ -88,6 +90,8 @@ let sex = req.query.sex;
 indexRoute.get('/list',(req,res)=>{
     // 来就给你所有的东西
     myT.find('studentsInfo',{},(err,docs)=>{
+        console.log(docs);
+        
         if(!err) res.json({
             mess:"数据",
             code:200,
